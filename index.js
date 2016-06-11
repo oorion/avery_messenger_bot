@@ -12,7 +12,6 @@ const express = require('express');
 const request = require('request');
 const Wit = require('node-wit').Wit;
 const _ = require('underscore');
-const beerFilterCollectionFormatter = require('./formatters/beerFilterCollectionFormatter');
 
 // Webserver parameter
 const PORT = process.env.PORT || 8445;
