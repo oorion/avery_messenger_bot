@@ -122,19 +122,50 @@ const actions = {
     if (recipientId) {
       // Yay, we found our recipient!
       // Let's forward our bot response to her.
-      fbMessage(recipientId, message, (err, data) => {
-        if (err) {
-          console.log(
-            'Oops! An error occurred while forwarding the response to',
-            recipientId,
-            ':',
-            err
-          );
-        }
+      if (message.length >= 320)
+      {
+        console.log ("HOLD ON!");
+        var first_msg = message.substring(0, 319);
+        fbMessage(recipientId, first_msg, (err, data) => {
+          if (err) {
+            console.log(
+              'Oops! An error occurred while forwarding the response to',
+              recipientId,
+              ':',
+              err
+            );
+          }
+          var rest_msg = message.substring(320);
+          fbMessage(recipientId, rest_msg, (err, data) => {
+            if (err) {
+              console.log(
+                'Oops! An error occurred while forwarding the response to',
+                recipientId,
+                ':',
+                err
+              );
+            }
 
-        // Let's give the wheel back to our bot
-        cb();
-      });
+            // Let's give the wheel back to our bot
+            cb();
+          });
+        });
+      }
+      else{
+        fbMessage(recipientId, message, (err, data) => {
+          if (err) {
+            console.log(
+              'Oops! An error occurred while forwarding the response to',
+              recipientId,
+              ':',
+              err
+            );
+          }
+
+          // Let's give the wheel back to our bot
+          cb();
+        });
+      }
     } else {
       console.log('Oops! Couldn\'t find user for session:', sessionId);
       // Giving the wheel back to our bot
