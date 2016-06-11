@@ -13,7 +13,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node index.js"
+    "start": "nodemon index.js"
   },
   "repository": "https://github.com/oorion/avery_messenger_bot",
   "author": "Angry Unicorns",
@@ -21,6 +21,7 @@
     "body-parser": "^1.15.1",
     "express": "^4.13.4",
     "node-wit": "^3.3.0",
+    "nodemon": "^1.9.2",
     "request": "^2.71.0",
     "underscore": "^1.8.3"
   }

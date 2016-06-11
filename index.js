@@ -12,6 +12,7 @@ const express = require('express');
 const request = require('request');
 const Wit = require('node-wit').Wit;
 const _ = require('underscore');
+const beerFilterCollectionFormatter = require('./formatters/beerFilterCollectionFormatter');
 
 // Webserver parameter
 const PORT = process.env.PORT || 8445;
@@ -153,18 +154,16 @@ const actions = {
     console.log(error.message);
   },
   ['getStyle'](sessionId, context, cb) {
-    var style;
-    if (context.beerStyle === "IPA") {
-      style = "Hop-forward";
-    }
-    request('http://apis.mondorobot.com/beers?categories=' + style, function (error, response, body) {
-      var parsedBody = JSON.parse(body);
-      var beersArray = _.map(parsedBody.beers, function(beer) {
-        return beer.name;
-      });
-      var beersString = beersArray.join(", ");
-      context.beers = beersString;
-    });
+    var queryString = beerFilterCollectionFormatter.queryString(context.beerStyle);
+    console.log("queryString: " + queryString);
+
+
+
+    //request('http://apis.mondorobot.com/beers?descriptors=descriptors&hop_varieties=hop_varieties&dry_hop_varieties=dry_hop_varieties&malt_varieties=malt_varieties&yeast_varieties=yeast_varieties&pairings=pairings&categories=categories', function (error, response, body) {
+      //console.log('Status:', response.statusCode);
+      //console.log('Headers:', JSON.stringify(response.headers));
+      //console.log('Response:', body);
+    //});
 
     cb(context);
   }
