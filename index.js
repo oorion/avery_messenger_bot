@@ -154,16 +154,23 @@ const actions = {
     console.log(error.message);
   },
   ['getStyle'](sessionId, context, cb) {
-    var queryString = beerFilterCollectionFormatter.queryString(context.beerStyle);
-    console.log("queryString: " + queryString);
+    request('http://apis.mondorobot.com/beer-filters', function (error, response, body) {
+      var attributeList = JSON.parse(body).beer_filters;
+      var styleAndStyleType = {};
+      _.map(attributeList, function(val, key) {
+        _.each(val, function(hash) {
+          styleAndStyleType[hash.name] = key;
+        });
+      });
+      var styleType = styleAndStyleType[context.beerStyle];
+      var queryString = styleType + "=" + context.beerStyle;
 
-
-
-    //request('http://apis.mondorobot.com/beers?descriptors=descriptors&hop_varieties=hop_varieties&dry_hop_varieties=dry_hop_varieties&malt_varieties=malt_varieties&yeast_varieties=yeast_varieties&pairings=pairings&categories=categories', function (error, response, body) {
-      //console.log('Status:', response.statusCode);
-      //console.log('Headers:', JSON.stringify(response.headers));
-      //console.log('Response:', body);
-    //});
+      request('http://apis.mondorobot.com/beers?' + queryString, function (error, response, body) {
+        console.log('Status:', response.statusCode);
+        console.log('Headers:', JSON.stringify(response.headers));
+        console.log('Response:', body);
+      });
+    });
 
     cb(context);
   }
