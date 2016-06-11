@@ -32,6 +32,11 @@ const FB_VERIFY_TOKEN = process.env.FB_VERIFY_TOKEN;
 
 const FORECAST_TOKEN = process.env.FORECAST_TOKEN;
 
+// Helpers
+function capitalizeFirstLetter(string) {
+    return string.charAt(0).toUpperCase() + string.slice(1);
+}
+
 // Messenger API specific code
 
 // See the Send API reference
@@ -262,7 +267,7 @@ const actions = {
       var parsedBody = JSON.parse(body);
       console.log(parsedBody);
       var eventsArray = _.map(parsedBody.events, function(event) {
-        return event.title.replace(/\\"/g, '"');;
+        return event.title.replace(/\\"/g, '"');
       });
       var eventsString = eventsArray.join(", ");
       context.events = eventsString;
@@ -271,7 +276,18 @@ const actions = {
     });
   },
   ['beerFinder'](sessionId, context, cb) {
+    // This will not work currently. Needs to get the beer id and grab a zip code (not sure how to get that if they type in a city)
+    request('http://apis.mondorobot.com/beer-finder?beer=[key]&zip_code=80504&per_page=4', function (error, response, body) {
+      var parsedBody = JSON.parse(body);
+    // This all should work once the request is correct.
+      var storeArray = _.map(parsedBody.results, function(store) {
+        return capitalizeFirstLetter(store.name.toLowerCase());
+      });
+      var locationString = storeArray.join(", ");
+      context.locations = locationString;
 
+      cb(context);
+    });
   }
 };
 
