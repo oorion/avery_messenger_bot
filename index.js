@@ -356,6 +356,56 @@ const actions = {
         });
       });
     });
+  },
+  ['getRecentCheckins'](sessionId, context, cb) {
+    request('https://api.untappd.com/v4/venue/checkins/490?client_id='+UNTAPPD_ID+'&client_secret='+UNTAPPD_SECRET, function(error, response, body) {
+      var parsedBody = JSON.parse(body);
+      var recentPopularBeers1 = _.map(parsedBody.response.checkins.items, function(item) {
+        return item.beer.beer_name;
+      });
+
+      var lastCheckinId = parsedBody.response.checkins.items.pop().checkin_id;
+      request('https://api.untappd.com/v4/venue/checkins/490?client_id='+UNTAPPD_ID+'&client_secret='+UNTAPPD_SECRET+'&max_id='+lastCheckinId, function(error, response, body) {
+        var parsedBody = JSON.parse(body);
+        var recentPopularBeers2 = _.map(parsedBody.response.checkins.items, function(item) {
+          return item.beer.beer_name;
+        });
+
+        var beersArray = recentPopularBeers1.concat(recentPopularBeers2);
+        //console.log(recentPopularBeers1);
+        //console.log(recentPopularBeers2);
+        //console.log(beersArray);
+        var countPerBeer = {};
+        _.each(beersArray, function(b) {
+          if (countPerBeer[b] === undefined) {
+            countPerBeer[b] = 1;
+          } else {
+            countPerBeer[b] = countPerBeer[b] + 1;
+          }
+        });
+
+        var countPerBeerArray = []
+        _.mapObject(countPerBeer, function(val, key) {
+          countPerBeerArray.push({name: key, checkins: val});
+        });
+
+
+        var sortedBeersByCheckins = _.sortBy(countPerBeerArray, function(blah) {
+          return -blah.checkins;
+        });
+        console.log(sortedBeersByCheckins);
+        var beersString = _.map(sortedBeersByCheckins.slice(0, 3), function(hash) {
+          return hash.name;
+        }).join(', ');
+        //var sortedBeersByCheckins = _.sortBy(countPerBeer, function(key, value) {
+          //return value;
+        //});
+
+        console.log(beersString);
+        context.beers = beersString;
+        cb(context);
+      });
+    });
   }
 };
 
