@@ -245,6 +245,20 @@ const actions = {
       cb(context);
     });
   },
+  ['getRelated'](sessionId, context, cb) {
+    // This works without an apostrophe like "White Rascal"
+    var queryString = context.beerNamesAndIds[context.beerName.replace("'", "\\'")];
+    request('http://apis.mondorobot.com/beers/' + queryString, function (error, response, body) {
+      var parsedBody = JSON.parse(body);
+      // could make this cooler and grab style and abv with it.
+      var beersArray = _.map(parsedBody.beer.related_beers, function(beer) {
+        return beer.name;
+      });
+      var beersString = beersArray.join(", ");
+      context.related_beers = beersString;
+      cb(context);
+    });
+  },
   ['getOnTap'](sessionId, context, cb) {
     // This is just a huge list, maybe same them off like getStyle so someone can ask a follow up?
     request('http://apis.mondorobot.com/taproom/on-tap', function (error, response, body) {
