@@ -197,6 +197,8 @@ const actions = {
       console.log(context.beerNamesAndIds[context.beerName]);
       var parsedBody = JSON.parse(body);
       console.log(parsedBody);
+      context.description = parsedBody.beer.name + ' is a ' + parsedBody.beer.style + ' with '+ parsedBody.beer.abv + '% ABV';
+      cb(context);
     });
   }
 };
