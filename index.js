@@ -11,6 +11,7 @@ const bodyParser = require('body-parser');
 const express = require('express');
 const request = require('request');
 const Wit = require('node-wit').Wit;
+const _ = require('underscore');
 
 // Webserver parameter
 const PORT = process.env.PORT || 8445;
@@ -142,17 +143,29 @@ const actions = {
   },
   merge(sessionId, context, entities, message, cb) {
     // Retrieve the location entity and store it into a context field
-    const loc = firstEntityValue(entities, 'location');
-    if (loc) {
-      context.loc = loc;
+    const beerStyle = firstEntityValue(entities, 'beer_style');
+    if (beerStyle) {
+      context.beerStyle = beerStyle;
     }
     cb(context);
   },
   error(sessionId, context, error) {
     console.log(error.message);
   },
-  ['customMethod'](sessionId, context, cb) {
-    //modify the context to pass variables back
+  ['getStyle'](sessionId, context, cb) {
+    var style;
+    if (context.beerStyle === "IPA") {
+      style = "Hop-forward";
+    }
+    request('http://apis.mondorobot.com/beers?categories=' + style, function (error, response, body) {
+      var parsedBody = JSON.parse(body);
+      var beersArray = _.map(parsedBody.beers, function(beer) {
+        return beer.name;
+      });
+      var beersString = beersArray.join(", ");
+      context.beers = beersString;
+    });
+
     cb(context);
   }
 };
