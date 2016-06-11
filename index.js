@@ -203,6 +203,7 @@ const actions = {
   },
   ['getStyle'](sessionId, context, cb) {
     request('http://apis.mondorobot.com/beer-filters', function (error, response, body) {
+      // No Changes to this at all.
       var attributeList = JSON.parse(body).beer_filters;
       var styleAndStyleType = {};
       _.map(attributeList, function(val, key) {
@@ -232,6 +233,7 @@ const actions = {
     });
   },
   ['getBeerInfo'](sessionId, context, cb) {
+    // This works without an apostrophe like "White Rascal"
     var queryString = context.beerNamesAndIds[context.beerName.replace("'", "\\'")];
     request('http://apis.mondorobot.com/beers/' + queryString, function (error, response, body) {
       console.log(context.beerName.replace("'", "\\'"));
@@ -244,6 +246,7 @@ const actions = {
     });
   },
   ['getOnTap'](sessionId, context, cb) {
+    // This is just a huge list, maybe same them off like getStyle so someone can ask a follow up?
     request('http://apis.mondorobot.com/taproom/on-tap', function (error, response, body) {
       var parsedBody = JSON.parse(body);
       var beersArray = _.map(parsedBody.beer_list.beers, function(beer) {
@@ -256,20 +259,22 @@ const actions = {
     });
   },
   ['getWeather'](sessionId, context, cb) {
+    // Hardcoded to the brewery, will show forecast for the next hour
     request('https://api.forecast.io/forecast/'+FORECAST_TOKEN+'/40.0626984,-105.2047749', function (error, response, body) {
       var parsedBody = JSON.parse(body);
       context.forecast = parsedBody.minutely.summary;
-
       cb(context);
     });
   },
   ['getEvents'](sessionId, context, cb) {
+    // This returns ALL events, even old ones. need to sort by "starts_at" and get rid of older events
     request('http://apis.mondorobot.com/events', function (error, response, body) {
       var parsedBody = JSON.parse(body);
       console.log(parsedBody);
       var eventsArray = _.map(parsedBody.events, function(event) {
         return event.title.replace(/\\"/g, '"');
       });
+      // Also maybe only show the next two events and include title and date?
       var eventsString = eventsArray.join(", ");
       context.events = eventsString;
 
