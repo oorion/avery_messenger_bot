@@ -322,46 +322,35 @@ const actions = {
 
         async.forEachOf(parsedBody.beers, function(beer, key, callback) {
           beerNamesAndIds[beer.name] = beer.id;
-          console.log("beer.name: " + beer.name);
 
           //get checkin count from Untappd
-          request('https://api.untappd.com/v4/search/beer?client_id='+UNTAPPD_ID+'&client_secret='+UNTAPPD_SECRET+'&q=White+Rascal', function (error, response, body) {
-            //console.log("response: ");
-            //console.log(response);
+          request('https://api.untappd.com/v4/search/beer?client_id='+UNTAPPD_ID+'&client_secret='+UNTAPPD_SECRET+'&q=avery+' + beer.name, function (error, response, body) {
             console.log("body: ");
             console.log(body);
             if (error) {
-              console.log("error: ");
-              console.log(error);
               return error;
             }
             var parsedBody = JSON.parse(body);
             if (parsedBody.response.beers.count > 0) {
               beerNamesAndCheckins.push({name: beer.name, checkins: parsedBody.response.beers.items[0].checkin_count});
             }
-            console.log("beerNamesAndCheckins1: ");
-            console.log(beerNamesAndCheckins);
             callback();
           });
         }, function(err) {
-          console.log("everything finished");
           if (err) {
             console.log(err);
           }
           //do someting with the objects once everything completes
           context.beerNamesAndIds = beerNamesAndIds;
-          console.log("beerNamesAndIds: ");
-          console.log(beerNamesAndIds);
-          console.log("beerNamesAndCheckins2: ");
-          console.log(beerNamesAndCheckins);
 
-          var sortedBeersByCheckins = _.sortBy(beerNamesAndCheckins, 'checkins');
+          var sortedBeersByCheckins = _.sortBy(beerNamesAndCheckins, function(blah) {
+            return -blah.checkins;
+          });
           beersArray = _.map(sortedBeersByCheckins, function(iteratee) {
             return iteratee.name + " with " + iteratee.checkins + " checkins";
           });
-          var beersString = beersArray.join(", ");
+          var beersString = beersArray.join(", ") + " according to Untappd";
           context.beers = beersString;
-          console.log("beerString: " + beersString);
 
           cb(context);
         });
