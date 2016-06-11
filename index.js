@@ -30,6 +30,8 @@ if (!FB_PAGE_TOKEN) {
 }
 const FB_VERIFY_TOKEN = process.env.FB_VERIFY_TOKEN;
 
+const FORECAST_TOKEN = process.env.FORECAST_TOKEN;
+
 // Messenger API specific code
 
 // See the Send API reference
@@ -124,7 +126,6 @@ const actions = {
       // Let's forward our bot response to her.
       if (message.length >= 320)
       {
-        console.log ("HOLD ON!");
         var first_msg = message.substring(0, 319);
         fbMessage(recipientId, first_msg, (err, data) => {
           if (err) {
@@ -249,7 +250,12 @@ const actions = {
     });
   },
   ['getWeather'](sessionId, context, cb) {
+    request('https://api.forecast.io/forecast/'+FORECAST_TOKEN+'/40.0626984,-105.2047749', function (error, response, body) {
+      var parsedBody = JSON.parse(body);
+      context.forecast = parsedBody.minutely.summary;
 
+      cb(context);
+    });
   },
   ['getEvents'](sessionId, context, cb) {
 
