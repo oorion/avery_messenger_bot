@@ -166,13 +166,17 @@ const actions = {
       var queryString = styleType + "=" + context.beerStyle;
 
       request('http://apis.mondorobot.com/beers?' + queryString, function (error, response, body) {
-        console.log('Status:', response.statusCode);
-        console.log('Headers:', JSON.stringify(response.headers));
-        console.log('Response:', body);
+        var parsedBody = JSON.parse(body);
+        var beersArray = _.map(parsedBody.beers, function(beer) {
+          return beer.name;
+        });
+        var beersString = beersArray.join(", ");
+        context.beers = beersString;
+
+        cb(context);
       });
     });
 
-    cb(context);
   }
 };
 
