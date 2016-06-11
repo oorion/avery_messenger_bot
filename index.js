@@ -320,27 +320,51 @@ const actions = {
         var beerNamesAndCheckins = [];
         var beerNamesAndIds = {};
 
-        _.each(parsedBody.beers, function(beer) {
+        async.forEachOf(parsedBody.beers, function(beer, key, callback) {
           beerNamesAndIds[beer.name] = beer.id;
+          console.log("beer.name: " + beer.name);
 
-          //get checking count from Untappd
-          request('https://api.untappd.com/v4/search/beer?client_id='+UNTAPPD_ID+'&client_secret='+UNTAPPD_SECRET+'&q=' + beer.name, function (error, response, body) {
+          //get checkin count from Untappd
+          request('https://api.untappd.com/v4/search/beer?client_id='+UNTAPPD_ID+'&client_secret='+UNTAPPD_SECRET+'&q=White+Rascal', function (error, response, body) {
+            //console.log("response: ");
+            //console.log(response);
+            console.log("body: ");
+            console.log(body);
+            if (error) {
+              console.log("error: ");
+              console.log(error);
+              return error;
+            }
             var parsedBody = JSON.parse(body);
             if (parsedBody.response.beers.count > 0) {
               beerNamesAndCheckins.push({name: beer.name, checkins: parsedBody.response.beers.items[0].checkin_count});
             }
+            console.log("beerNamesAndCheckins1: ");
+            console.log(beerNamesAndCheckins);
+            callback();
           });
-        });
-        context.beerNamesAndIds = beerNamesAndIds;
+        }, function(err) {
+          console.log("everything finished");
+          if (err) {
+            console.log(err);
+          }
+          //do someting with the objects once everything completes
+          context.beerNamesAndIds = beerNamesAndIds;
+          console.log("beerNamesAndIds: ");
+          console.log(beerNamesAndIds);
+          console.log("beerNamesAndCheckins2: ");
+          console.log(beerNamesAndCheckins);
 
-        var sortedBeersByCheckins = _.sortBy(beerNamesAndCheckins, 'checkins');
-        beersArray = _.map(sortedBeersByCheckins, function(iteratee) {
-          return iteratee.name + " with " + iteratee.checkins + " checkins";
-        });
-        var beersString = beersArray.join(", ");
-        context.beers = beersString;
+          var sortedBeersByCheckins = _.sortBy(beerNamesAndCheckins, 'checkins');
+          beersArray = _.map(sortedBeersByCheckins, function(iteratee) {
+            return iteratee.name + " with " + iteratee.checkins + " checkins";
+          });
+          var beersString = beersArray.join(", ");
+          context.beers = beersString;
+          console.log("beerString: " + beersString);
 
-        cb(context);
+          cb(context);
+        });
       });
     });
   }
