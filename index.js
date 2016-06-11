@@ -347,9 +347,9 @@ const actions = {
             return -blah.checkins;
           });
           beersArray = _.map(sortedBeersByCheckins, function(iteratee) {
-            return iteratee.name + " with " + iteratee.checkins + " checkins";
+            return iteratee.name + " (" + iteratee.checkins + " checkins)";
           });
-          var beersString = beersArray.join(", ") + " according to Untappd";
+          var beersString = "\n" + beersArray.join(",\n") + "\n*checkins according to Untappd";
           context.beers = beersString;
 
           cb(context);
