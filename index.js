@@ -258,7 +258,17 @@ const actions = {
     });
   },
   ['getEvents'](sessionId, context, cb) {
+    request('http://apis.mondorobot.com/events', function (error, response, body) {
+      var parsedBody = JSON.parse(body);
+      console.log(parsedBody);
+      var eventsArray = _.map(parsedBody.events, function(event) {
+        return event.title.replace(/\\"/g, '"');;
+      });
+      var eventsString = eventsArray.join(", ");
+      context.events = eventsString;
 
+      cb(context);
+    });
   },
   ['beerFinder'](sessionId, context, cb) {
 
