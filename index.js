@@ -12,6 +12,7 @@ const express = require('express');
 const request = require('request');
 const Wit = require('node-wit').Wit;
 const _ = require('underscore');
+const path = require('path');
 
 // Webserver parameter
 const PORT = process.env.PORT || 8445;
@@ -300,6 +301,9 @@ app.set('port', PORT);
 app.listen(app.get('port'));
 app.use(bodyParser.json());
 
+app.get('/', function(req, res) {
+    res.sendFile(path.join(__dirname + '/index.html'));
+});
 // Webhook setup
 app.get('/fb', (req, res) => {
   if (!FB_VERIFY_TOKEN) {
