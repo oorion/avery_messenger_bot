@@ -148,6 +148,12 @@ const actions = {
     if (beerStyle) {
       context.beerStyle = beerStyle;
     }
+
+    const beerName = firstEntityValue(entities, 'beer_name');
+    if (beerName) {
+      context.beerName = beerName;
+    }
+
     cb(context);
   },
   error(sessionId, context, error) {
@@ -170,13 +176,29 @@ const actions = {
         var beersArray = _.map(parsedBody.beers, function(beer) {
           return beer.name;
         });
+
+        var beerNamesAndIds = {}
+        _.each(parsedBody.beers, function(beer) {
+          beerNamesAndIds[beer.name] = beer.id;
+        });
+        context.beerNamesAndIds = beerNamesAndIds;
         var beersString = beersArray.join(", ");
         context.beers = beersString;
 
         cb(context);
       });
     });
+  },
 
+  ['getBeerInfo'](sessionId, context, cb) {
+    var queryString = context.beerNamesAndIds[context.beerName.replace("'", "\\'")];
+    request('http://apis.mondorobot.com/beers/' + queryString, function (error, response, body) {
+      console.log(context.beerName.replace("'", "\\'"));
+      console.log(context.beerNamesAndIds);
+      console.log(context.beerNamesAndIds[context.beerName]);
+      var parsedBody = JSON.parse(body);
+      console.log(parsedBody);
+    });
   }
 };
 
