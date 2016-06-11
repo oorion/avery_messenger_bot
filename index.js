@@ -33,6 +33,10 @@ const FB_VERIFY_TOKEN = process.env.FB_VERIFY_TOKEN;
 
 const FORECAST_TOKEN = process.env.FORECAST_TOKEN;
 
+const UNTAPPD_ID = process.env.UNTAPPD_ID;
+
+const UNTAPPD_SECRET = process.env.UNTAPPD_SECRET;
+
 // Helpers
 function capitalizeFirstLetter(string) {
     return string.charAt(0).toUpperCase() + string.slice(1);
@@ -257,6 +261,21 @@ const actions = {
       var beersString = beersArray.join(", ");
       context.related_beers = beersString;
       cb(context);
+    });
+  },
+  ['getPopular'](sessionId, context, cb) {
+    request('https://api.untappd.com/v4/search/beer?client_id='+UNTAPPD_ID+'&client_secret='+UNTAPPD_SECRET+'&q=White+Rascal', function (error, response, body) {
+      var parsedBody = JSON.parse(body);
+      if (parsedBody.response.beers.count > 0) {
+        context.popular_beers = parsedBody.response.beers.items[0].beer.beer_name + ' with ' + parsedBody.response.beers.items[0].checkin_count + ' checkins';
+      }
+      request('https://api.untappd.com/v4/search/beer?client_id='+UNTAPPD_ID+'&client_secret='+UNTAPPD_SECRET+'&q=Avery+IPA', function (error, response, body) {
+        var parsedBody = JSON.parse(body);
+        if (parsedBody.response.beers.count > 0) {
+          context.popular_beers = context.popular_beers + ' & ' + parsedBody.response.beers.items[0].beer.beer_name + ' with ' + parsedBody.response.beers.items[0].checkin_count + ' checkins';
+        }
+        cb(context);
+      });
     });
   },
   ['getOnTap'](sessionId, context, cb) {
