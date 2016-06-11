@@ -206,7 +206,16 @@ const actions = {
     });
   },
   ['getOnTap'](sessionId, context, cb) {
+    request('http://apis.mondorobot.com/taproom/on-tap', function (error, response, body) {
+      var parsedBody = JSON.parse(body);
+      var beersArray = _.map(parsedBody.beer_list.beers, function(beer) {
+        return beer.name;
+      });
+      var beersString = beersArray.join(", ");
+      context.beers = beersString;
 
+      cb(context);
+    });
   },
   ['getWeather'](sessionId, context, cb) {
 
