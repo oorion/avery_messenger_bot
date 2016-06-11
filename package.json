@@ -18,6 +18,7 @@
   "repository": "https://github.com/oorion/avery_messenger_bot",
   "author": "Angry Unicorns",
   "dependencies": {
+    "async": "^2.0.0-rc.6",
     "body-parser": "^1.15.1",
     "express": "^4.13.4",
     "node-wit": "^3.3.0",

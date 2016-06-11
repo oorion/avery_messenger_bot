@@ -13,6 +13,7 @@ const request = require('request');
 const Wit = require('node-wit').Wit;
 const _ = require('underscore');
 const path = require('path');
+const async = require("async");
 
 // Webserver parameter
 const PORT = process.env.PORT || 8445;
@@ -205,37 +206,6 @@ const actions = {
   error(sessionId, context, error) {
     console.log(error.message);
   },
-  ['getStyle'](sessionId, context, cb) {
-    request('http://apis.mondorobot.com/beer-filters', function (error, response, body) {
-      // No Changes to this at all.
-      var attributeList = JSON.parse(body).beer_filters;
-      var styleAndStyleType = {};
-      _.map(attributeList, function(val, key) {
-        _.each(val, function(hash) {
-          styleAndStyleType[hash.name] = key;
-        });
-      });
-      var styleType = styleAndStyleType[context.beerStyle];
-      var queryString = styleType + "=" + context.beerStyle;
-
-      request('http://apis.mondorobot.com/beers?' + queryString, function (error, response, body) {
-        var parsedBody = JSON.parse(body);
-        var beersArray = _.map(parsedBody.beers, function(beer) {
-          return beer.name;
-        });
-
-        var beerNamesAndIds = {}
-        _.each(parsedBody.beers, function(beer) {
-          beerNamesAndIds[beer.name] = beer.id;
-        });
-        context.beerNamesAndIds = beerNamesAndIds;
-        var beersString = beersArray.join(", ");
-        context.beers = beersString;
-
-        cb(context);
-      });
-    });
-  },
   ['getBeerInfo'](sessionId, context, cb) {
     // This works without an apostrophe like "White Rascal"
     var queryString = context.beerNamesAndIds[context.beerName.replace("'", "\\'")];
@@ -326,6 +296,52 @@ const actions = {
       context.locations = locationString;
 
       cb(context);
+    });
+  },
+  ['getStyle'](sessionId, context, cb) {
+    request('http://apis.mondorobot.com/beer-filters', function (error, response, body) {
+      // No Changes to this at all.
+      var attributeList = JSON.parse(body).beer_filters;
+      var styleAndStyleType = {};
+      _.map(attributeList, function(val, key) {
+        _.each(val, function(hash) {
+          styleAndStyleType[hash.name] = key;
+        });
+      });
+      var styleType = styleAndStyleType[context.beerStyle];
+      var queryString = styleType + "=" + context.beerStyle;
+
+      request('http://apis.mondorobot.com/beers?' + queryString, function (error, response, body) {
+        var parsedBody = JSON.parse(body);
+        var beersArray = _.map(parsedBody.beers, function(beer) {
+          return beer.name;
+        });
+
+        var beerNamesAndCheckins = [];
+        var beerNamesAndIds = {};
+
+        _.each(parsedBody.beers, function(beer) {
+          beerNamesAndIds[beer.name] = beer.id;
+
+          //get checking count from Untappd
+          request('https://api.untappd.com/v4/search/beer?client_id='+UNTAPPD_ID+'&client_secret='+UNTAPPD_SECRET+'&q=' + beer.name, function (error, response, body) {
+            var parsedBody = JSON.parse(body);
+            if (parsedBody.response.beers.count > 0) {
+              beerNamesAndCheckins.push({name: beer.name, checkins: parsedBody.response.beers.items[0].checkin_count});
+            }
+          });
+        });
+        context.beerNamesAndIds = beerNamesAndIds;
+
+        var sortedBeersByCheckins = _.sortBy(beerNamesAndCheckins, 'checkins');
+        beersArray = _.map(sortedBeersByCheckins, function(iteratee) {
+          return iteratee.name + " with " + iteratee.checkins + " checkins";
+        });
+        var beersString = beersArray.join(", ");
+        context.beers = beersString;
+
+        cb(context);
+      });
     });
   }
 };
