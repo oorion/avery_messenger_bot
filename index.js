@@ -153,6 +153,11 @@ const actions = {
       context.beerName = beerName;
     }
 
+    const loc = firstEntityValue(entities, 'location');
+    if (loc) {
+      context.loc = loc;
+    }
+
     cb(context);
   },
   error(sessionId, context, error) {
@@ -188,7 +193,6 @@ const actions = {
       });
     });
   },
-
   ['getBeerInfo'](sessionId, context, cb) {
     var queryString = context.beerNamesAndIds[context.beerName.replace("'", "\\'")];
     request('http://apis.mondorobot.com/beers/' + queryString, function (error, response, body) {
@@ -200,6 +204,18 @@ const actions = {
       context.description = parsedBody.beer.name + ' is a ' + parsedBody.beer.style + ' with '+ parsedBody.beer.abv + '% ABV';
       cb(context);
     });
+  },
+  ['getOnTap'](sessionId, context, cb) {
+
+  },
+  ['getWeather'](sessionId, context, cb) {
+
+  },
+  ['getEvents'](sessionId, context, cb) {
+
+  },
+  ['beerFinder'](sessionId, context, cb) {
+
   }
 };
 
